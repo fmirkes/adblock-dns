@@ -1,0 +1,29 @@
+---
+version: "2"
+
+volumes:
+  adblock-dns-pixelserv:
+
+services:
+  dnsmasq:
+    image: adblock-dns-dnsmasq
+    build: ./dnsmasq
+    container_name: adblock-dns-dnsmasq
+    depends_on: 
+      - pixelserv-tls
+    restart: always
+    env_file: adblock-dns.env
+    ports:
+      - "0.0.0.0:53:53"
+      - "0.0.0.0:53:53/udp"
+  
+  pixelserv-tls:
+    image: adblock-dns-pixelserv
+    build: ./pixelserv
+    container_name: adblock-dns-pixelserv
+    restart: always
+    ports:
+      - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
+    volumes:
+      - "adblock-dns-pixelserv:/var/cache/pixelserv"
