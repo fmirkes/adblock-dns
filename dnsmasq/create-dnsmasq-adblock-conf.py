@@ -54,7 +54,7 @@ def read_hosts_file(url):
 
     hosts_file = get_url_content(url)
     for line in hosts_file.split("\n"):
-        if line.startswith("127.0.0.1"):
+        if line.startswith("127.0.0.1") or line.startswith("0.0.0.0"):
             line = line[10:].strip()
             if is_valid_hostname(line):
                 host_list.append(line)
