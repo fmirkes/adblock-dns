@@ -1,10 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
 import os
 import re
-import urllib2
+import sys
+
+from urllib.request import urlopen, Request
 
 simple_blocklists = ["https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt",
                      "https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt",
@@ -26,7 +28,7 @@ valid_hostname_regex = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGN
 def read_simple_list(url):
     host_list = []
 
-    simple_list = urllib2.urlopen(build_url_req(url)).read()
+    simple_list = get_url_content(url)
     for line in simple_list.split("\n"):
         if is_valid_hostname(line):
             host_list.append(line)
@@ -37,7 +39,7 @@ def read_simple_list(url):
 def read_abp_list(url):
     host_list = []
 
-    abp_list = urllib2.urlopen(build_url_req(url)).read()
+    abp_list = get_url_content(url)
     for line in abp_list.split("\n"):
         if line.startswith("||") and line.endswith("^"):
             line = line[2:-1]
@@ -50,7 +52,7 @@ def read_abp_list(url):
 def read_hosts_file(url):
     host_list = []
 
-    hosts_file = urllib2.urlopen(build_url_req(url)).read()
+    hosts_file = get_url_content(url)
     for line in hosts_file.split("\n"):
         if line.startswith("127.0.0.1"):
             line = line[10:].strip()
@@ -59,10 +61,17 @@ def read_hosts_file(url):
 
     return host_list
 
+def get_url_content(url):
+    url_request = Request(url, headers={"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"})
+    
+    url = urlopen(url_request)
+   
+    url_content_charset = url.headers.get_content_charset()
+    if url_content_charset is None:
+        url_content_charset = sys.getdefaultencoding()
 
-def build_url_req(url):
-    return urllib2.Request(url, headers={"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"})
-
+    url_content = url.read().decode(url_content_charset)
+    return url_content
 
 def is_valid_hostname(hostname):
     if hostname.endswith('.'):

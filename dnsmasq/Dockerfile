@@ -6,7 +6,7 @@ EXPOSE 53
 
 VOLUME ["/etc/dnsmasq.d"]
 
-RUN apk --no-cache add ca-certificates dnsmasq python
+RUN apk --no-cache add ca-certificates dnsmasq python3
 
 COPY create-dnsmasq-adblock-conf.py /usr/local/bin/create-dnsmasq-adblock-conf
 
