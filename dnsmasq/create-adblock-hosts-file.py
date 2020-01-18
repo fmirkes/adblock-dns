@@ -8,18 +8,6 @@ import sys
 
 from urllib.request import urlopen, Request
 
-simple_blocklists = ["https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt",
-                     "https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt",
-                     "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"]
-
-abp_lists = ["https://filters.adtidy.org/extension/chromium/filters/15.txt",
-             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt",
-             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt",
-             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt",
-             "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt"]
-
-hosts_files = []
-
 adblock_hosts_file = "/etc/dnsmasq.d/adblock.hosts"
 
 valid_hostname_regex = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
@@ -91,18 +79,32 @@ def write_adblock_hosts_file(blocklist):
         for host in blocklist:
             hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP'], host))
 
-blocklist = set()
 
-for sbl in simple_blocklists:
-    for host in read_simple_list(sbl):
-        blocklist.add(host)
+if __name__ == "__main__":
+    hosts_to_block = set()
 
-for abpl in abp_lists:
-    for host in read_abp_list(abpl):
-        blocklist.add(host)
+    blocklists_simple = []
+    if len(os.environ['BLOCKLISTS_SIMPLE']) > 0:
+        blocklists_simple = os.environ['BLOCKLISTS_SIMPLE'].split(",")
 
-for hf in hosts_files:
-    for host in read_hosts_file(hf):
-        blocklist.add(host)
+    blocklists_abp = [] 
+    if len(os.environ['BLOCKLISTS_ABP']) > 0:
+        blocklists_abp = os.environ['BLOCKLISTS_ABP'].split(",")
+    
+    blocklists_hosts = []
+    if len(os.environ['BLOCKLISTS_HOSTS']) > 0:
+        blocklists_hosts = os.environ['BLOCKLISTS_HOSTS'].split(",")
+    
+    for sbl in blocklists_simple:
+        for host in read_simple_list(sbl):
+            hosts_to_block.add(host)
 
-write_adblock_hosts_file(sorted(blocklist))
+    for abpl in blocklists_abp:
+        for host in read_abp_list(abpl):
+            hosts_to_block.add(host)
+
+    for hf in blocklists_hosts:
+        for host in read_hosts_file(hf):
+            hosts_to_block.add(host)
+
+    write_adblock_hosts_file(sorted(hosts_to_block))
