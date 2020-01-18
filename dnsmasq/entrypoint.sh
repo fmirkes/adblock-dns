@@ -1,5 +1,5 @@
 #!/bin/sh
 set -eu
 
-/usr/local/bin/create-dnsmasq-adblock-conf
+/usr/local/bin/create-adblock-hosts-file
 dnsmasq -d

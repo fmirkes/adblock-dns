@@ -8,7 +8,9 @@ VOLUME ["/etc/dnsmasq.d"]
 
 RUN apk --no-cache add ca-certificates dnsmasq python3
 
-COPY create-dnsmasq-adblock-conf.py /usr/local/bin/create-dnsmasq-adblock-conf
+RUN echo "addn-hosts=/etc/dnsmasq.d/adblock.hosts" > /etc/dnsmasq.d/adblock.conf
+
+COPY create-adblock-hosts-file.py /usr/local/bin/create-adblock-hosts-file
 
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]

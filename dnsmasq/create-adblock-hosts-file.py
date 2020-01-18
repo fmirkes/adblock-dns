@@ -20,7 +20,7 @@ abp_lists = ["https://filters.adtidy.org/extension/chromium/filters/15.txt",
 
 hosts_files = []
 
-dnsmasq_block_conf_path = "/etc/dnsmasq.d/adblock.conf"
+adblock_hosts_file = "/etc/dnsmasq.d/adblock.hosts"
 
 valid_hostname_regex = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
 
@@ -86,15 +86,10 @@ def is_valid_hostname(hostname):
     return all(valid_hostname_regex.match(hn_part) for hn_part in hostname.split('.'))
 
 
-def write_dnsmasq_block_conf(blocklist):
-    conf = []
-    for host in blocklist:
-        conf.append("address=/{}/{}\n".format(host, os.environ['PIXELSERV_IP']))
-
-    conf_file = open(dnsmasq_block_conf_path, "w")
-    conf_file.writelines(conf)
-    conf_file.close()
-
+def write_adblock_hosts_file(blocklist):
+    with open(adblock_hosts_file, "w") as hosts_file:
+        for host in blocklist:
+            hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP'], host))
 
 blocklist = set()
 
@@ -110,4 +105,4 @@ for hf in hosts_files:
     for host in read_hosts_file(hf):
         blocklist.add(host)
 
-write_dnsmasq_block_conf(sorted(blocklist))
+write_adblock_hosts_file(sorted(blocklist))
