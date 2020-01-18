@@ -2,6 +2,7 @@
 version: "2"
 
 volumes:
+  adblock-dns-dnsmasq:
   adblock-dns-pixelserv:
 
 services:
@@ -16,6 +17,8 @@ services:
     ports:
       - "0.0.0.0:53:53"
       - "0.0.0.0:53:53/udp"
+    volumes:
+      - "adblock-dns-dnsmasq:/etc/dnsmasq.d"
   
   pixelserv-tls:
     image: adblock-dns-pixelserv
