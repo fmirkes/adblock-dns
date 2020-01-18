@@ -8,9 +8,9 @@ import sys
 
 from urllib.request import urlopen, Request
 
-adblock_hosts_file = "/etc/dnsmasq.d/adblock.hosts"
+ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
 
-valid_hostname_regex = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
+VALID_HOSTNAME_REGEX = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
 
 
 def read_simple_list(url):
@@ -71,11 +71,11 @@ def is_valid_hostname(hostname):
     if hostname is "localhost" or hostname.endswith(".localdomain") or hostname.endswith(".local"):
         return False
 
-    return all(valid_hostname_regex.match(hn_part) for hn_part in hostname.split('.'))
+    return all(VALID_HOSTNAME_REGEX.match(hn_part) for hn_part in hostname.split('.'))
 
 
 def write_adblock_hosts_file(blocklist):
-    with open(adblock_hosts_file, "w") as hosts_file:
+    with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
         for host in blocklist:
             hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP'], host))
 
