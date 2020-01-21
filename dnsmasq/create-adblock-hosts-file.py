@@ -95,6 +95,10 @@ if __name__ == "__main__":
     if len(os.environ['BLOCKLISTS_HOSTS']) > 0:
         blocklists_hosts = os.environ['BLOCKLISTS_HOSTS'].split(",")
     
+    domain_whitelist = []
+    if len(os.environ['DOMAIN_WHITELIST']) > 0:
+        domain_whitelist = os.environ['DOMAIN_WHITELIST'].split(",")
+
     for sbl in blocklists_simple:
         for host in read_simple_list(sbl):
             hosts_to_block.add(host)
@@ -106,5 +110,9 @@ if __name__ == "__main__":
     for hf in blocklists_hosts:
         for host in read_hosts_file(hf):
             hosts_to_block.add(host)
+    
+    for domain in domain_whitelist:
+        if domain in hosts_to_block:
+            hosts_to_block.remove(domain)
 
     write_adblock_hosts_file(sorted(hosts_to_block))
