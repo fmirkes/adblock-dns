@@ -68,7 +68,7 @@ def is_valid_hostname(hostname):
     if len(hostname) < 1 or len(hostname) > 253:
         return False
 
-    if hostname is "localhost" or hostname.endswith(".localdomain") or hostname.endswith(".local"):
+    if hostname == "localhost" or hostname.endswith(".localdomain") or hostname.endswith(".local"):
         return False
 
     return all(VALID_HOSTNAME_REGEX.match(hn_part) for hn_part in hostname.split('.'))
