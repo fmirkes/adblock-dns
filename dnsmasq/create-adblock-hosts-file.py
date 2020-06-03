@@ -95,6 +95,10 @@ if __name__ == "__main__":
     if len(os.environ['BLOCKLISTS_HOSTS']) > 0:
         blocklists_hosts = os.environ['BLOCKLISTS_HOSTS'].split(",")
     
+    domain_blacklist = []
+    if len(os.environ['DOMAIN_BLACKLIST']) > 0:
+        domain_blacklist = os.environ['DOMAIN_BLACKLIST'].split(",")
+
     domain_whitelist = []
     if len(os.environ['DOMAIN_WHITELIST']) > 0:
         domain_whitelist = os.environ['DOMAIN_WHITELIST'].split(",")
@@ -111,6 +115,9 @@ if __name__ == "__main__":
         for host in read_hosts_file(hf):
             hosts_to_block.add(host)
     
+    for domain in domain_blacklist:
+        hosts_to_block.add(domain)
+
     for domain in domain_whitelist:
         if domain in hosts_to_block:
             hosts_to_block.remove(domain)
