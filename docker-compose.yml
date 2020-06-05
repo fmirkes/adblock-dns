@@ -15,8 +15,8 @@ services:
     restart: always
     env_file: adblock-dns.env
     ports:
-      - "0.0.0.0:53:53"
-      - "0.0.0.0:53:53/udp"
+      - "53:53"
+      - "53:53/udp"
     volumes:
       - "adblock-dns-dnsmasq:/etc/dnsmasq.d"
   
@@ -26,7 +26,7 @@ services:
     container_name: adblock-dns-pixelserv
     restart: always
     ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - "adblock-dns-pixelserv:/var/cache/pixelserv"

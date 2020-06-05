@@ -42,10 +42,19 @@ def read_hosts_file(url):
 
     hosts_file = get_url_content(url)
     for line in hosts_file.split("\n"):
-        if line.startswith("127.0.0.1") or line.startswith("0.0.0.0"):
-            line = line[10:].strip()
-            if is_valid_hostname(line):
-                host_list.append(line)
+        strip_size = 0
+        
+        if line.startswith("127.0.0.1"):
+            strip_size = 10
+        elif line.startswith("0.0.0.0"):
+            strip_size = 8
+        elif line.startswith("::1"):
+            strip_size = 4
+        elif line.startswith("::"):
+            strip_size = 3
+        
+        if strip_size > 0 and is_valid_hostname(line):
+            host_list.append(line)
 
     return host_list
 
@@ -77,7 +86,10 @@ def is_valid_hostname(hostname):
 def write_adblock_hosts_file(blocklist):
     with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
         for host in blocklist:
-            hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP'], host))
+            if os.environ['PIXELSERV_IP4']:
+                hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP4'], host))
+            if os.environ['PIXELSERV_IP6']:
+                hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP6'], host))
 
 
 if __name__ == "__main__":
