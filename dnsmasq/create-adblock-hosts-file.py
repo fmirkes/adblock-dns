@@ -10,8 +10,11 @@ from urllib.request import urlopen, Request
 
 ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
 
+INVALID_HOSTNAMES = ["localhost", "local", "ip6-localhost", "ip6-loopback"]
+INVALID_DOMAINS = [".local", ".localdomain"]
 VALID_HOSTNAME_REGEX = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
 
+HOSTS_FILE_BLOCK_IPS = ["127.0.0.1", "0.0.0.0", "::1", "::"]
 
 def read_simple_list(url):
     host_list = []
@@ -42,19 +45,12 @@ def read_hosts_file(url):
 
     hosts_file = get_url_content(url)
     for line in hosts_file.split("\n"):
-        strip_size = 0
-        
-        if line.startswith("127.0.0.1"):
-            strip_size = 10
-        elif line.startswith("0.0.0.0"):
-            strip_size = 8
-        elif line.startswith("::1"):
-            strip_size = 4
-        elif line.startswith("::"):
-            strip_size = 3
-        
-        if strip_size > 0 and is_valid_hostname(line):
-            host_list.append(line)
+        for ip in HOSTS_FILE_BLOCK_IPS:
+            if line.startswith(ip):
+                hostname = line[len(ip):].strip()
+                if is_valid_hostname(hostname):
+                     host_list.append(hostname)
+                break
 
     return host_list
 
@@ -77,8 +73,12 @@ def is_valid_hostname(hostname):
     if len(hostname) < 1 or len(hostname) > 253:
         return False
 
-    if hostname == "localhost" or hostname.endswith(".localdomain") or hostname.endswith(".local"):
+    if hostname in INVALID_HOSTNAMES:
         return False
+    
+    for domain in INVALID_DOMAINS:
+        if hostname.endswith(domain):
+            return False
 
     return all(VALID_HOSTNAME_REGEX.match(hn_part) for hn_part in hostname.split('.'))
 
