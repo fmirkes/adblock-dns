@@ -107,16 +107,13 @@ if __name__ == "__main__":
     domain_whitelist = get_env_list('DOMAIN_WHITELIST')
 
     for sbl in blocklists_simple:
-        for host in read_simple_list(sbl):
-            hosts_to_block.add(host)
+        hosts_to_block.update(read_simple_list(sbl))
 
     for abpl in blocklists_abp:
-        for host in read_abp_list(abpl):
-            hosts_to_block.add(host)
+        hosts_to_block.update(read_abp_list(abpl))
 
     for hf in blocklists_hosts:
-        for host in read_hosts_file(hf):
-            hosts_to_block.add(host)
+        hosts_to_block.update(read_hosts_file(hf))
     
     for domain in domain_blacklist:
         hosts_to_block.add(domain)
