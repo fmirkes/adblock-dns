@@ -82,6 +82,10 @@ def is_valid_hostname(hostname):
 
     return all(VALID_HOSTNAME_REGEX.match(hn_part) for hn_part in hostname.split('.'))
 
+def get_env_list(env_var):
+    if len(os.environ[env_var]) > 0:
+        return os.environ[env_var].split(",")
+    return []
 
 def write_adblock_hosts_file(blocklist):
     with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
@@ -95,25 +99,12 @@ def write_adblock_hosts_file(blocklist):
 if __name__ == "__main__":
     hosts_to_block = set()
 
-    blocklists_simple = []
-    if len(os.environ['BLOCKLISTS_SIMPLE']) > 0:
-        blocklists_simple = os.environ['BLOCKLISTS_SIMPLE'].split(",")
-
-    blocklists_abp = [] 
-    if len(os.environ['BLOCKLISTS_ABP']) > 0:
-        blocklists_abp = os.environ['BLOCKLISTS_ABP'].split(",")
+    blocklists_simple = get_env_list('BLOCKLISTS_SIMPLE')
+    blocklists_abp = get_env_list('BLOCKLISTS_ABP')
+    blocklists_hosts = get_env_list('BLOCKLISTS_HOSTS')
     
-    blocklists_hosts = []
-    if len(os.environ['BLOCKLISTS_HOSTS']) > 0:
-        blocklists_hosts = os.environ['BLOCKLISTS_HOSTS'].split(",")
-    
-    domain_blacklist = []
-    if len(os.environ['DOMAIN_BLACKLIST']) > 0:
-        domain_blacklist = os.environ['DOMAIN_BLACKLIST'].split(",")
-
-    domain_whitelist = []
-    if len(os.environ['DOMAIN_WHITELIST']) > 0:
-        domain_whitelist = os.environ['DOMAIN_WHITELIST'].split(",")
+    domain_blacklist = get_env_list('DOMAIN_BLACKLIST')
+    domain_whitelist = get_env_list('DOMAIN_WHITELIST')
 
     for sbl in blocklists_simple:
         for host in read_simple_list(sbl):
