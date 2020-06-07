@@ -1,2 +1,4 @@
 adblock-dns.env
+docker-compose.yml
+
 .vscode/
