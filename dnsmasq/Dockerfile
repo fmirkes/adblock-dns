@@ -14,7 +14,8 @@ EXPOSE 53 53/udp
 
 RUN apk --no-cache add ca-certificates dnsmasq python3
 
-RUN echo "cache-size=10000" > /etc/dnsmasq.d/adblock.conf \
+RUN echo "no-hosts" >> /etc/dnsmasq.d/adblock.conf \
+  && echo "cache-size=10000" >> /etc/dnsmasq.d/adblock.conf \
   && echo "local-ttl=2147483647" >> /etc/dnsmasq.d/adblock.conf \
   && echo "addn-hosts=/etc/dnsmasq.d/adblock.hosts" >> /etc/dnsmasq.d/adblock.conf
 
