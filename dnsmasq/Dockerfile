@@ -19,7 +19,5 @@ RUN echo "addn-hosts=/etc/dnsmasq.d/adblock.hosts" >> /etc/dnsmasq.d/adblock.con
 
 COPY create-adblock-hosts-file.py /usr/local/bin/create-adblock-hosts-file
 
-VOLUME ["/etc/dnsmasq.d"]
-
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
