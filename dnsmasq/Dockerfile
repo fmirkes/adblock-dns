@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.12
 
 ENV PIXELSERV_IP4=127.0.0.1
 ENV PIXELSERV_IP6=::1
