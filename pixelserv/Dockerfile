@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine
 
 ENV PIXELSERV_VERSION=2.3.1
 
