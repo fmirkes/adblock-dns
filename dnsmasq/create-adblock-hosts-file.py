@@ -12,9 +12,11 @@ ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
 
 INVALID_HOSTNAMES = ["localhost", "local", "ip6-localhost", "ip6-loopback"]
 INVALID_DOMAINS = [".local", ".localdomain"]
-VALID_HOSTNAME_REGEX = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
+VALID_HOSTNAME_REGEX = re.compile(
+    '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
 
 HOSTS_FILE_BLOCK_IPS = ["127.0.0.1", "0.0.0.0", "::1", "::"]
+
 
 def fetch_and_convert_simple_list(url):
     host_list = []
@@ -49,22 +51,25 @@ def fetch_and_convert_hosts_file(url):
             if line.startswith(ip):
                 hostname = line[len(ip):].strip()
                 if is_valid_hostname(hostname):
-                     host_list.append(hostname)
+                    host_list.append(hostname)
                 break
 
     return host_list
 
+
 def fetch_url_content(url):
-    url_request = Request(url, headers={"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"})
-    
+    url_request = Request(url, headers={
+                          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"})
+
     url = urlopen(url_request)
-   
+
     url_content_charset = url.headers.get_content_charset()
     if url_content_charset is None:
         url_content_charset = sys.getdefaultencoding()
 
     url_content = url.read().decode(url_content_charset)
     return url_content
+
 
 def is_valid_hostname(hostname):
     if hostname.endswith('.'):
@@ -75,25 +80,29 @@ def is_valid_hostname(hostname):
 
     if hostname in INVALID_HOSTNAMES:
         return False
-    
+
     for domain in INVALID_DOMAINS:
         if hostname.endswith(domain):
             return False
 
     return all(VALID_HOSTNAME_REGEX.match(hn_part) for hn_part in hostname.split('.'))
 
+
 def get_env_list(env_var):
     if len(os.environ[env_var]) > 0:
         return os.environ[env_var].split(",")
     return []
 
+
 def write_adblock_hosts_file(blocklist):
     with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
         for host in blocklist:
             if os.environ['PIXELSERV_IP4']:
-                hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP4'], host))
+                hosts_file.write("{} {}\n".format(
+                    os.environ['PIXELSERV_IP4'], host))
             if os.environ['PIXELSERV_IP6']:
-                hosts_file.write("{} {}\n".format(os.environ['PIXELSERV_IP6'], host))
+                hosts_file.write("{} {}\n".format(
+                    os.environ['PIXELSERV_IP6'], host))
 
 
 if __name__ == "__main__":
@@ -102,7 +111,7 @@ if __name__ == "__main__":
     blocklists_simple = get_env_list('BLOCKLISTS_SIMPLE')
     blocklists_abp = get_env_list('BLOCKLISTS_ABP')
     blocklists_hosts = get_env_list('BLOCKLISTS_HOSTS')
-    
+
     domain_blacklist = get_env_list('DOMAIN_BLACKLIST')
     domain_whitelist = get_env_list('DOMAIN_WHITELIST')
 
@@ -114,7 +123,7 @@ if __name__ == "__main__":
 
     for hf in blocklists_hosts:
         hosts_to_block.update(fetch_and_convert_hosts_file(hf))
-    
+
     for domain in domain_blacklist:
         hosts_to_block.add(domain)
 
