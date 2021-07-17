@@ -16,10 +16,10 @@ VALID_HOSTNAME_REGEX = re.compile('^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGN
 
 HOSTS_FILE_BLOCK_IPS = ["127.0.0.1", "0.0.0.0", "::1", "::"]
 
-def read_simple_list(url):
+def fetch_and_convert_simple_list(url):
     host_list = []
 
-    simple_list = get_url_content(url)
+    simple_list = fetch_url_content(url)
     for line in simple_list.split("\n"):
         if is_valid_hostname(line):
             host_list.append(line)
@@ -27,10 +27,10 @@ def read_simple_list(url):
     return host_list
 
 
-def read_abp_list(url):
+def fetch_and_convert_abp_list(url):
     host_list = []
 
-    abp_list = get_url_content(url)
+    abp_list = fetch_url_content(url)
     for line in abp_list.split("\n"):
         if line.startswith("||") and line.endswith("^"):
             line = line[2:-1]
@@ -40,10 +40,10 @@ def read_abp_list(url):
     return host_list
 
 
-def read_hosts_file(url):
+def fetch_and_convert_hosts_file(url):
     host_list = []
 
-    hosts_file = get_url_content(url)
+    hosts_file = fetch_url_content(url)
     for line in hosts_file.split("\n"):
         for ip in HOSTS_FILE_BLOCK_IPS:
             if line.startswith(ip):
@@ -54,7 +54,7 @@ def read_hosts_file(url):
 
     return host_list
 
-def get_url_content(url):
+def fetch_url_content(url):
     url_request = Request(url, headers={"User-Agent" : "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:60.0) Gecko/20100101 Firefox/60.0"})
     
     url = urlopen(url_request)
@@ -107,13 +107,13 @@ if __name__ == "__main__":
     domain_whitelist = get_env_list('DOMAIN_WHITELIST')
 
     for sbl in blocklists_simple:
-        hosts_to_block.update(read_simple_list(sbl))
+        hosts_to_block.update(fetch_and_convert_simple_list(sbl))
 
     for abpl in blocklists_abp:
-        hosts_to_block.update(read_abp_list(abpl))
+        hosts_to_block.update(fetch_and_convert_abp_list(abpl))
 
     for hf in blocklists_hosts:
-        hosts_to_block.update(read_hosts_file(hf))
+        hosts_to_block.update(fetch_and_convert_hosts_file(hf))
     
     for domain in domain_blacklist:
         hosts_to_block.add(domain)
