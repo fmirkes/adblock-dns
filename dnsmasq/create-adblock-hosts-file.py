@@ -6,6 +6,9 @@ import os
 import re
 import sys
 
+from enum import Enum, auto
+from queue import Queue
+from threading import Thread, Lock
 from urllib.request import urlopen, Request
 
 ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
@@ -16,6 +19,35 @@ VALID_HOSTNAME_REGEX = re.compile(
     '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$', re.IGNORECASE)
 
 HOSTS_FILE_BLOCK_IPS = ["127.0.0.1", "0.0.0.0", "::1", "::"]
+
+
+class BLOCKLIST_TYPE(Enum):
+    ABP = auto(),
+    HOSTS_FILE = auto(),
+    SIMPLE = auto()
+
+
+def thread_get_hosts_to_block(blocklist_queue, hosts_to_block, hosts_to_block_lock):
+    blocklist = blocklist_queue.get()
+    while blocklist is not None:
+        hosts = get_hosts_to_block(blocklist)
+        with hosts_to_block_lock:
+            hosts_to_block.update(hosts)
+        blocklist = blocklist_queue.get()
+
+
+def get_hosts_to_block(blocklist):
+    list_type, url = blocklist
+
+    fetch_and_convert_list = {
+        BLOCKLIST_TYPE.ABP: fetch_and_convert_abp_list(url),
+        BLOCKLIST_TYPE.HOSTS_FILE: fetch_and_convert_abp_list(url),
+        BLOCKLIST_TYPE.SIMPLE: fetch_and_convert_simple_list(url)
+    }
+
+    if list_type in fetch_and_convert_list:
+        return fetch_and_convert_list[list_type]
+    return []
 
 
 def fetch_and_convert_simple_list(url):
@@ -106,7 +138,18 @@ def write_adblock_hosts_file(blocklist):
 
 
 if __name__ == "__main__":
+    host_to_block_threads = []
+
+    blocklist_queue = Queue()
     hosts_to_block = set()
+    hosts_to_block_lock = Lock()
+
+    for _ in range(os.cpu_count()):
+        thread = Thread(target=thread_get_hosts_to_block, args=(
+            blocklist_queue, hosts_to_block, hosts_to_block_lock))
+
+        thread.start()
+        host_to_block_threads.append(thread)
 
     blocklists_simple = get_env_list('BLOCKLISTS_SIMPLE')
     blocklists_abp = get_env_list('BLOCKLISTS_ABP')
@@ -115,14 +158,17 @@ if __name__ == "__main__":
     domain_blacklist = get_env_list('DOMAIN_BLACKLIST')
     domain_whitelist = get_env_list('DOMAIN_WHITELIST')
 
-    for sbl in blocklists_simple:
-        hosts_to_block.update(fetch_and_convert_simple_list(sbl))
+    for url in blocklists_abp:
+        blocklist_queue.put((BLOCKLIST_TYPE.ABP, url))
+    for url in blocklists_hosts:
+        blocklist_queue.put((BLOCKLIST_TYPE.HOSTS_FILE, url))
+    for url in blocklists_simple:
+        blocklist_queue.put((BLOCKLIST_TYPE.SIMPLE, url))
+    for thread in host_to_block_threads:
+        blocklist_queue.put(None)
 
-    for abpl in blocklists_abp:
-        hosts_to_block.update(fetch_and_convert_abp_list(abpl))
-
-    for hf in blocklists_hosts:
-        hosts_to_block.update(fetch_and_convert_hosts_file(hf))
+    for thread in host_to_block_threads:
+        thread.join()
 
     for domain in domain_blacklist:
         hosts_to_block.add(domain)
