@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+# TODO: 
+#   - add error handling
+#   - add logging
+#   - add help/description
+
 import os
 import re
 import sys
