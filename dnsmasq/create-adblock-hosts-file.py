@@ -48,17 +48,6 @@ def get_hosts_to_block(blocklist):
     return []
 
 
-def fetch_and_convert_simple_list(url):
-    host_list = []
-
-    simple_list = fetch_url_content(url)
-    for line in simple_list.split("\n"):
-        if is_valid_hostname(line):
-            host_list.append(line)
-
-    return host_list
-
-
 def fetch_and_convert_abp_list(url):
     host_list = []
 
@@ -83,6 +72,17 @@ def fetch_and_convert_hosts_file(url):
                 if is_valid_hostname(hostname):
                     host_list.append(hostname)
                 break
+
+    return host_list
+
+
+def fetch_and_convert_simple_list(url):
+    host_list = []
+
+    simple_list = fetch_url_content(url)
+    for line in simple_list.split("\n"):
+        if is_valid_hostname(line):
+            host_list.append(line)
 
     return host_list
 
