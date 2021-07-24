@@ -11,7 +11,7 @@ import sys
 from enum import Enum, auto
 from queue import Queue
 from threading import Thread, Lock
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
 
@@ -104,7 +104,7 @@ def fetch_url_content(url):
 
     url_content = ''
     try:
-        url = urlopen(url)
+        url = urlopen(Request(url, headers={'User-Agent': 'Mozilla/5.0'}))
 
         url_content_charset = url.headers.get_content_charset()
         if url_content_charset is None:
