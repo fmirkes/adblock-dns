@@ -49,7 +49,7 @@ def get_hosts_to_block(blocklist):
 
     fetch_and_convert_list = {
         BLOCKLIST_TYPE.ABP: fetch_and_convert_abp_list(url),
-        BLOCKLIST_TYPE.HOSTS_FILE: fetch_and_convert_abp_list(url),
+        BLOCKLIST_TYPE.HOSTS_FILE: fetch_and_convert_hosts_file(url),
         BLOCKLIST_TYPE.SIMPLE: fetch_and_convert_simple_list(url)
     }
 
