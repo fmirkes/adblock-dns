@@ -11,7 +11,7 @@ import sys
 from enum import Enum, auto
 from queue import Queue
 from threading import Thread, Lock
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
 ADBLOCK_HOSTS_FILE = "/etc/dnsmasq.d/adblock.hosts"
 
