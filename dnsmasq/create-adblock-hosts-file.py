@@ -47,14 +47,12 @@ def thread_get_hosts_to_block(blocklist_queue, hosts_to_block, hosts_to_block_lo
 def get_hosts_to_block(blocklist):
     list_type, url = blocklist
 
-    fetch_and_convert_list = {
-        BLOCKLIST_TYPE.ABP: fetch_and_convert_abp_list(url),
-        BLOCKLIST_TYPE.HOSTS_FILE: fetch_and_convert_hosts_file(url),
-        BLOCKLIST_TYPE.SIMPLE: fetch_and_convert_simple_list(url)
-    }
-
-    if list_type in fetch_and_convert_list:
-        return fetch_and_convert_list[list_type]
+    if list_type == BLOCKLIST_TYPE.ABP:
+      return fetch_and_convert_abp_list(url)
+    if list_type == BLOCKLIST_TYPE.HOSTS_FILE:
+      return fetch_and_convert_hosts_file(url)
+    if list_type == BLOCKLIST_TYPE.SIMPLE:
+      return fetch_and_convert_simple_list(url)
     
     logging.error("Unkown list type %s for url %s.", list_type, url)
     return []
