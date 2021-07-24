@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# TODO: 
+# TODO:
 #   - add help/description
 
 import logging
@@ -28,32 +28,34 @@ class BLOCKLIST_TYPE(Enum):
     HOSTS_FILE = auto(),
     SIMPLE = auto()
 
+
 logLevel = logging.WARN
 if 'DEBUG' in os.environ:
-  if re.match(os.environ['DEBUG'], 'true', re.IGNORECASE):
-    logLevel = logging.DEBUG
-logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logLevel)
+    if re.match(os.environ['DEBUG'], 'true', re.IGNORECASE):
+        logLevel = logging.DEBUG
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s %(message)s', level=logLevel)
 
 
-def thread_get_hosts_to_block(blocklist_queue, hosts_to_block, hosts_to_block_lock):    
+def thread_get_hosts_to_block(blocklist_queue, hosts_to_block, hosts_to_block_lock):
     blocklist = blocklist_queue.get()
     while blocklist is not None:
         hosts = get_hosts_to_block(blocklist)
         with hosts_to_block_lock:
             hosts_to_block.update(hosts)
         blocklist = blocklist_queue.get()
-    
+
 
 def get_hosts_to_block(blocklist):
     list_type, url = blocklist
 
     if list_type == BLOCKLIST_TYPE.ABP:
-      return fetch_and_convert_abp_list(url)
+        return fetch_and_convert_abp_list(url)
     if list_type == BLOCKLIST_TYPE.HOSTS_FILE:
-      return fetch_and_convert_hosts_file(url)
+        return fetch_and_convert_hosts_file(url)
     if list_type == BLOCKLIST_TYPE.SIMPLE:
-      return fetch_and_convert_simple_list(url)
-    
+        return fetch_and_convert_simple_list(url)
+
     logging.error("Unkown list type %s for url %s.", list_type, url)
     return []
 
@@ -99,18 +101,18 @@ def fetch_and_convert_simple_list(url):
 
 def fetch_url_content(url):
     logging.info('Fetching blocklist from url %s...', url)
-    
+
     url_content = ''
     try:
-      url = urlopen(url)
-      
-      url_content_charset = url.headers.get_content_charset()
-      if url_content_charset is None:
-        url_content_charset = sys.getdefaultencoding()
-      
-      url_content = url.read().decode(url_content_charset)
+        url = urlopen(url)
+
+        url_content_charset = url.headers.get_content_charset()
+        if url_content_charset is None:
+            url_content_charset = sys.getdefaultencoding()
+
+        url_content = url.read().decode(url_content_charset)
     except Exception as e:
-      logging.error("Couldn't fetch blocklist from url %s: %s", url, e)
+        logging.error("Couldn't fetch blocklist from url %s: %s", url, e)
     return url_content
 
 
@@ -139,17 +141,18 @@ def get_env_list(env_var):
 
 def write_adblock_hosts_file(blocklist):
     try:
-      with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
-          for host in blocklist:
-              if os.environ['PIXELSERV_IP4']:
-                  hosts_file.write("{} {}\n".format(
-                      os.environ['PIXELSERV_IP4'], host))
-              if os.environ['PIXELSERV_IP6']:
-                  hosts_file.write("{} {}\n".format(
-                      os.environ['PIXELSERV_IP6'], host))
+        with open(ADBLOCK_HOSTS_FILE, "w") as hosts_file:
+            for host in blocklist:
+                if os.environ['PIXELSERV_IP4']:
+                    hosts_file.write("{} {}\n".format(
+                        os.environ['PIXELSERV_IP4'], host))
+                if os.environ['PIXELSERV_IP6']:
+                    hosts_file.write("{} {}\n".format(
+                        os.environ['PIXELSERV_IP6'], host))
     except Exception as e:
-      logging.fatal("Couldn't write adblock hosts file to %s: %s", ADBLOCK_HOSTS_FILE, e)
-      return False
+        logging.fatal("Couldn't write adblock hosts file to %s: %s",
+                      ADBLOCK_HOSTS_FILE, e)
+        return False
     return True
 
 
@@ -188,19 +191,20 @@ if __name__ == "__main__":
 
     for domain in domain_blacklist:
         if is_valid_hostname(domain):
-          hosts_to_block.add(domain)
+            hosts_to_block.add(domain)
         else:
-          logging.warn("%s is not a valid domain name. Won't add it to block list!", domain)
+            logging.warn(
+                "%s is not a valid domain name. Won't add it to block list!", domain)
 
     for domain in domain_whitelist:
         if domain in hosts_to_block:
             hosts_to_block.remove(domain)
 
     if len(hosts_to_block) == 0:
-      logging.fatal("Blocklist is empty")
-      sys.exit(1)
+        logging.fatal("Blocklist is empty")
+        sys.exit(1)
 
     if not write_adblock_hosts_file(sorted(hosts_to_block)):
-      sys.exit(1)
+        sys.exit(1)
 
     sys.exit(0)
