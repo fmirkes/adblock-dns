@@ -1,6 +1,7 @@
 FROM alpine
 
-ENV PIXELSERV_VERSION=2.4
+ENV PIXELSERV_VERSION="2.4"
+ENV PIXELSERV_CA_CN="adblock-dns CA"
 
 EXPOSE 80
 EXPOSE 443
@@ -14,13 +15,12 @@ RUN apk add --no-cache --virtual .build-deps autoconf automake build-base linux-
   && apk del .build-deps \
   && rm "/tmp/${PIXELSERV_VERSION}.tar.gz" && rm -r "/tmp/pixelserv-tls-${PIXELSERV_VERSION}"
 
-RUN apk add --no-cache openssl \
-  && mkdir -p "/var/cache/pixelserv" \
-  && openssl genrsa -out "/var/cache/pixelserv/ca.key" 1024 \
-  && openssl req -key "/var/cache/pixelserv/ca.key" -new -x509 -days 3650 -sha256 -extensions v3_ca -out "/var/cache/pixelserv/ca.crt" -subj "/CN=Pixelserv CA" \
-  && chown -R nobody "/var/cache/pixelserv" \
-  && apk del openssl
+RUN apk add --no-cache openssl
+
+RUN mkdir -p "/var/cache/pixelserv" \
+  && chown -R nobody "/var/cache/pixelserv"
 
 VOLUME /var/cache/pixelserv
 
-ENTRYPOINT ["pixelserv-tls","-f"]
+COPY entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
